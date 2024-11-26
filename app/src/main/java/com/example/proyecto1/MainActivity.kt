@@ -1,5 +1,6 @@
 package com.example.proyecto1
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,83 +9,84 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.outlined.ArrowDropDown
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.proyecto1.ui.theme.Proyecto1Theme
-import androidx.compose.material.icons.filled.PowerSettingsNew
-import androidx.compose.ui.graphics.Color.Companion.Green
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            GreetingPreview()
+            CombinedApp()
         }
     }
 }
 
 @Composable
-fun App() {
-    Proyecto1Theme {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Titulo(
-                name = "Android",
-                modifier = Modifier.padding(innerPadding)
-            )
+fun CombinedApp() {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "menu") {
+        composable("menu") { MainMenu(navController) }
+        composable("exercise1") { Exercise1Screen() }
+        composable("exercise2") { Exercise2Screen() }
+    }
+}
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun MainMenu(navController: NavController) {
+    Scaffold {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(onClick = { navController.navigate("exercise1") }) {
+                    Text("Tipos de sensores (Sergio Gómez Sánchez)")
+                }
+                Button(
+                    onClick = { navController.navigate("exercise2") },
+                    modifier = Modifier.padding(top = 16.dp)
+                ) {
+                    Text("Inicio (Jose Francisco Mora Garcia)")
+                }
+            }
         }
     }
 }
 
+// ---------------------------- Ejercicio 1 ----------------------------
 @Composable
-fun Titulo(name: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = Modifier.background(color = Color.Blue)
-    ){
-        Text(
-            text = "Tipo de $name",
-            modifier = modifier,
-            //textAlign = TextAlign.Center,
-            fontSize = 32.sp,
-            color = Color.White
-        )
-    }
-
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
+fun Exercise1Screen() {
+    val titulo="Sensores"
     val dispositivo11 = AccordionModel.Dispositivo(nombre = "AirClima 18000 Multi Connected (Aire acondicionado)")
     val dispositivo12 = AccordionModel.Dispositivo(nombre = "KETOTEK WiFi (Termostato)", conectado = true)
     val dispositivo13 = AccordionModel.Dispositivo(nombre = "Daitsu ECO DS-12KDR-2 (Aire Acondicionado)")
@@ -106,25 +108,55 @@ fun GreetingPreview() {
     val listaRow3 : List<AccordionModel.Dispositivo> = listOf(dispositivo31,dispositivo32,dispositivo33)
     val modelo3 = AccordionModel(header = "Apertura",listaRow3)
 
+    val listaModelos by rememberSaveable{mutableStateOf(listOf(modelo,modelo2,modelo3))}
 
-    Proyecto1Theme {
-        Scaffold(
-            modifier = Modifier.fillMaxSize()
-        ) { innerPadding ->
+    Exercise1Theme {
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             Column (
                 modifier = Modifier.padding(innerPadding)
             ) {
 
-                Titulo(name="Sensores",Modifier.fillMaxWidth().padding(5.dp))
+                Titulo(name=titulo,Modifier.fillMaxWidth().padding(5.dp))
                 HorizontalDivider(thickness = 2.dp)
-                Accordion(model=modelo)
-                Accordion(model=modelo2)
-                Accordion(model=modelo3)
+                Body(listaModelos)
 
             }
-
         }
     }
+}
+@Composable
+fun Titulo(name: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier = Modifier.background(color = Color.Blue)
+    ){
+        Text(
+            text = "Tipo de $name",
+            modifier = modifier,
+            //textAlign = TextAlign.Center,
+            fontSize = 32.sp,
+            color = Color.White
+        )
+    }
+
+}
+@Composable
+fun Body(listaModelos: List<AccordionModel>) {
+    for (i in 0..(listaModelos.size - 1)){
+        Accordion(model=listaModelos.get(i))
+    }
+}
+@Composable
+fun Exercise1Theme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = lightColorScheme(
+            primary = Color.Blue,
+            onPrimary = Color.White,
+            background = Color.LightGray,
+            onBackground = Color.Black
+        ),
+        typography = Typography(),
+        content = content
+    )
 }
 
 
@@ -225,5 +257,110 @@ fun Accordion(modifier: Modifier = Modifier, model: AccordionModel) {
                 }
             }
         }
+    }
+}
+// ---------------------------- Ejercicio 2 ----------------------------
+@Composable
+fun Exercise2Screen() {
+    DeviceSelectorApp()
+}
+
+@Composable
+fun DeviceSelectorApp() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "device_list") {
+        composable("device_list") {
+            DeviceListScreen(navController)
+        }
+        composable("selected_device/{deviceType}/{deviceName}") { backStackEntry ->
+            val deviceType = backStackEntry.arguments?.getString("deviceType") ?: ""
+            val deviceName = backStackEntry.arguments?.getString("deviceName") ?: ""
+            SelectedDeviceScreen(deviceType, deviceName)
+        }
+    }
+}
+
+@Composable
+fun DeviceListScreen(navController: NavController) {
+    val deviceCategories = mapOf(
+        "Sensores" to listOf(
+            "Sensor de Temperatura y Humedad",
+            "Sensor de Movimiento",
+            "Sensor de Apertura",
+            "Sensor de Presión"
+        ),
+        "Actuadores" to listOf(
+            "Relé Inteligente",
+            "Actuador de Válvula",
+            "Servomotor",
+            "Controlador de Iluminación"
+        ),
+        "Dispositivos de Monitoreo y Control Complejo" to listOf(
+            "Cámara IP",
+            "Controlador de Clima",
+            "Estación Meteorológica",
+            "Contador de Energía"
+        )
+    )
+
+    var selectedDeviceType by remember { mutableStateOf("") }
+    var selectedDeviceName by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Lista de Dispositivos", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+        LazyColumn(modifier = Modifier.weight(1f).padding(top = 16.dp)) {
+            deviceCategories.forEach { (category, devices) ->
+                item {
+                    Text(
+                        text = category,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+                devices.forEach { device ->
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selectedDeviceType = category
+                                    selectedDeviceName = device
+                                }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(device)
+                        }
+                    }
+                }
+            }
+        }
+
+        Button(
+            onClick = {
+                if (selectedDeviceType.isNotEmpty() && selectedDeviceName.isNotEmpty()) {
+                    navController.navigate(
+                        "selected_device/$selectedDeviceType/$selectedDeviceName"
+                    )
+                }
+            },
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text("Añadir")
+        }
+    }
+}
+
+@Composable
+fun SelectedDeviceScreen(deviceType: String, deviceName: String) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize().padding(16.dp)
+    ) {
+        Text(
+            text = "Has seleccionado un \"$deviceType\": \"$deviceName\"",
+            fontSize = 18.sp
+        )
     }
 }
